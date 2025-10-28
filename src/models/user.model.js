@@ -33,23 +33,23 @@ const userSchema = new Schema(
        },
 
        coverimage:{
-        type:string
+        type : String
        },
 
        watchHistory:[
         {
-            type:Schema.Type.ObjectId,
+            type:Schema.Types.ObjectId,
             ref:"video"
         }
        ],
 
        password:{
-        type:string,
+        type:String,
         required:[true,"password is required"]
        },
 
        refreshToken:{
-        type:string
+        type:String
        },
 
 
@@ -60,19 +60,21 @@ const userSchema = new Schema(
 )
 
 userSchema.pre("save", async function(next){
-    if(!this.ismodified("password")) return next()
-    this.password = await bcrypt.hash("this.password",10)
+    if(!this.isModified("password")) return next()
+    this.password = await bcrypt.hash(this.password,10)
     next()
 })
 
-userSchema.methods.ispasswordcorrect = async function(password){
+userSchema.methods.isPasswordCorrect = async function(password){
     return await  bcrypt.compare(password,this.password)
 }
 
 userSchema.methods.generateaccesstoken = function(){
+        console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET);
+
     return jwt.sign
     (
-        {id:this._id,
+        {_id:this._id,
          email:this.email,
          username:this.username,
          fullname:this.fullname
@@ -82,11 +84,13 @@ userSchema.methods.generateaccesstoken = function(){
         {expiresIn:process.env.ACCESS_TOKEN_SECRET_EXPIRY})
 }
 userSchema.methods.generaterefreshtoken = function(){
+            console.log("REFRESH_TOKEN_SECRET:", process.env.REFRESH_TOKEN_SECRET);
+
     return jwt.sign
     (
-        {id:this._id},
+        {_id:this._id},
         process.env.REFRESH_TOKEN_SECRET,
         {expiresIn:process.env.REFRESH_TOKEN_SECRET_EXPIRY})
 
 }
-export const user = mongoose.model(user,userSchema)
+export const user = mongoose.model("user",userSchema)
